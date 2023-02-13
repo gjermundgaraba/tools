@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	genesis, blocks, period, simId, hostId, logObjPrefix string
+	genesis, blocks, period, simId, hostId, logObjPrefix, outputDir string
 
 	pkgName          = "./simapp"
 	seedOverrideList = ""
@@ -25,6 +25,7 @@ func initFlags() {
 	flag.StringVar(&logObjPrefix, "LogObjPrefix", "", "the S3 object prefix used when uploading logs")
 	flag.BoolVar(&notifySlack, "Slack", false, "report results to Slack channel")
 	flag.BoolVar(&notifyGithub, "Github", false, "update github check")
+	flag.StringVar(&outputDir, "OutputDir", "", "directory to output logs, params and exports")
 	flag.BoolVar(&exitOnFail, "ExitOnFail", false, "exit on fail during multi-sim, print error")
 	flag.IntVar(&jobs, "Jobs", jobs, "number of parallel processes")
 	flag.DurationVar(&timeout, "Timeout", defaultTimeout, "simulations fail if they run longer than the supplied timeout")
@@ -32,7 +33,7 @@ func initFlags() {
 	flag.Usage = func() {
 		_, _ = fmt.Fprintf(flag.CommandLine.Output(),
 			"Usage: %s [-Jobs maxprocs] [-ExitOnFail] [-Seeds comma-separated-seed-list] [-Genesis file-path] "+
-				"[-SimAppPkg file-path] [-Github] [-Slack] [-LogObjPrefix string] [blocks] [period] [testname]\n"+
+				"[-SimAppPkg file-path] [-Github] [-Slack] [-LogObjPrefix string] [-LogOutputFile string] [blocks] [period] [testname]\n"+
 				"Run simulations in parallel\n", filepath.Base(os.Args[0]))
 		flag.PrintDefaults()
 	}

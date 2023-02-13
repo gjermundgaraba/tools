@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -72,22 +71,30 @@ func init() {
 }
 
 func main() {
-	tempDir, err := ioutil.TempDir("", "sim-logs-")
-	if err != nil {
-		log.Fatalf("ERROR: ioutil.TempDir: %v", err)
+	flag.Parse()
+
+	var err error
+	if outputDir != "" {
+		if err := os.MkdirAll(outputDir, 0755); err != nil {
+			log.Fatalf("ERROR: os.MkdirAll: %v", err)
+		}
+	} else {
+		outputDir, err = os.MkdirTemp("", "sim-logs-")
+		if err != nil {
+			log.Fatalf("ERROR: os.MkdirTemp: %v", err)
+		}
 	}
 
-	okZip = filepath.Join(tempDir, "ok.zip")
-	failedZip = filepath.Join(tempDir, "failed.zip")
-	exportsZip = filepath.Join(tempDir, "exports.zip")
+	okZip = filepath.Join(outputDir, "ok.zip")
+	failedZip = filepath.Join(outputDir, "failed.zip")
+	exportsZip = filepath.Join(outputDir, "exports.zip")
 
-	runsimLogFile, err = os.OpenFile(filepath.Join(tempDir, "runsim_log"), os.O_RDWR|os.O_APPEND|os.O_CREATE, 0666)
+	runsimLogFile, err = os.OpenFile(filepath.Join(outputDir, "runsim_log"), os.O_RDWR|os.O_APPEND|os.O_CREATE, 0666)
 	if err != nil {
 		log.Fatalf("ERROR: os.OpenFile: %v", err)
 	}
 	log.SetOutput(io.MultiWriter(os.Stdout, runsimLogFile))
 
-	flag.Parse()
 	if flag.NArg() != 3 {
 		log.Fatal("ERROR: wrong number of arguments")
 	}
@@ -116,10 +123,10 @@ func main() {
 	for _, seed := range seeds {
 		seedQueue <- Seed{
 			Num:          seed,
-			Stderr:       filepath.Join(tempDir, buildLogFileName(seed)+".stderr"),
-			Stdout:       filepath.Join(tempDir, buildLogFileName(seed)+".stdout"),
-			ExportParams: filepath.Join(tempDir, fmt.Sprintf("sim_params-%d.json", seed)),
-			ExportState:  filepath.Join(tempDir, fmt.Sprintf("sim_state-%d.json", seed)),
+			Stderr:       filepath.Join(outputDir, buildLogFileName(seed)+".stderr"),
+			Stdout:       filepath.Join(outputDir, buildLogFileName(seed)+".stdout"),
+			ExportParams: filepath.Join(outputDir, fmt.Sprintf("sim_params-%d.json", seed)),
+			ExportState:  filepath.Join(outputDir, fmt.Sprintf("sim_state-%d.json", seed)),
 		}
 	}
 	close(seedQueue)
