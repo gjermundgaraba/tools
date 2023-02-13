@@ -1,4 +1,4 @@
-module github.com/cosmos/tools/cmd/runsim
+module github.com/gjermundgaraba/tools/cmd/runsim
 
 go 1.19
 
